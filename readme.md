@@ -1,0 +1,1 @@
+Extension which allows to anonymouse users of the site to post some information into the site. For example reviews or guestbook
