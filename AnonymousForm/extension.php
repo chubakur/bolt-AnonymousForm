@@ -44,10 +44,10 @@ class Extension extends \Bolt\BaseExtension
     {
         $this->config = $this->getConfig();
         $this->app->match($this->config['prefix'] . '{contenttype}', array($this, 'formHandler'));
-        $this->addTwigFunction('anonymouseFormPath', 'anonymouseFormPath');
+        $this->addTwigFunction('anonymousFormPath', 'anonymousFormPath');
     }
 
-    public function anonymouseFormPath($contenttype)
+    public function anonymousFormPath($contenttype)
     {
         if ( !in_array($contenttype, $this->config['contenttypes']) )
             throw new \Exception("Wrong contenttype");
