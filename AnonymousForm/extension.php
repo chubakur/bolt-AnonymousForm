@@ -51,7 +51,7 @@ class Extension extends \Bolt\BaseExtension
     {
         if ( !in_array($contenttype, $this->config['contenttypes']) )
             throw new \Exception("Wrong contenttype");
-        return $this->config['prefix'] . $contenttype;
+        return $this->app['paths']['root'] . $this->config['prefix'] . $contenttype;
     }
 
     public function formHandler($contenttype, Request $request)
