@@ -1,3 +1,9 @@
 prefix: service/add/
 contenttypes:
   - review
+
+captcha:
+  enabled:
+    - review
+  public: 6Lfq4fESAAAAANW7Pkad96xWFxAjOGNer1LqPG2G
+  private: 6Lfq4fESAAAAABw-QD_YYX4vCuWiXiRohYgZ0ZWr
