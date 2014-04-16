@@ -48,33 +48,60 @@ class Extension extends \Bolt\BaseExtension
         $this->addTwigFunction('getCaptchaFormField', 'getCaptchaFormField');
     }
 
-    public function getCaptchaFormField(){
+    public function getCaptchaFormField()
+    {
         require_once('recaptcha/recaptchalib.php');
+
         return recaptcha_get_html($this->config['captcha']['public']);
     }
 
     public function anonymouseFormPath($contenttype)
     {
-        if ( !in_array($contenttype, $this->config['contenttypes']) )
+        if (!in_array($contenttype, $this->config['contenttypes'])) {
             throw new \Exception("Wrong contenttype");
+        }
+
         return $this->app['paths']['root'] . $this->config['prefix'] . $contenttype;
+    }
+
+    protected function returnAfterSubmit($contenttype, $params = array())
+    {
+        if (isset($this->config['render'])) {
+            foreach ($this->config['render'] as $key => $value) {
+                if ($key == $contenttype) {
+                    foreach( $value as $type=>$arg){
+                        switch($type){
+                            case 'template': return $this->app['twig']->render($arg, $params);
+                            case 'path': return $this->app->redirect($arg);
+                            case 'route': return $this->app['url_generator']->generate($arg);
+                        }
+                    }
+                }
+            }
+        }
+
+        return $this->app->redirect($this->app['request']->headers->get('referer'));
     }
 
     public function formHandler($contenttype, Request $request)
     {
         if ($request->isMethod('POST') && in_array($contenttype, $this->config['contenttypes'])) {
-            if ( isset($this->config['captcha']['enabled'])
+            if (isset($this->config['captcha']['enabled'])
                 && is_array($this->config['captcha']['enabled'])
                 && in_array($contenttype, $this->config['captcha']['enabled'])
-            ){
+            ) {
                 require_once('recaptcha/recaptchalib.php');
-                $resp = recaptcha_check_answer ($this->config['captcha']['private'],
+                $resp = recaptcha_check_answer(
+                    $this->config['captcha']['private'],
                     $_SERVER["REMOTE_ADDR"],
                     $request->request->get('recaptcha_challenge_field'),
-                    $request->request->get('recaptcha_response_field'));
+                    $request->request->get('recaptcha_response_field')
+                );
                 if (!$resp->is_valid) {
-                    die ("The reCAPTCHA wasn't entered correctly. Go back and try it again." .
-                        "(reCAPTCHA said: " . $resp->error . ")");
+                    return $this->returnAfterSubmit(
+                        $contenttype,
+                        array('error' => $this->config['captcha']['error_message'])
+                    );
                 }
             }
             $storage = $this->app['storage'];
@@ -84,7 +111,7 @@ class Extension extends \Bolt\BaseExtension
             }
             $storage->saveContent($content);
 
-            return $this->app->redirect($request->headers->get('referer'));
+            return $this->returnAfterSubmit($contenttype);
         }
     }
 
